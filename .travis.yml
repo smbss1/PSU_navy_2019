@@ -1,0 +1,34 @@
+dist: trusty
+language: c
+compiler: gcc
+services:
+  - docker
+
+stages:
+  - build
+
+notifications:
+  email:
+    recipients:
+      - samuel.besseau@epitech.eu
+    on_success: never
+    on_failure: always
+
+after_success:
+  - git push -u blih
+
+jobs:
+  include:
+    - stages: build
+      name: "Build"
+      if: type != cron
+      install:
+        - docker pull epitechcontent/epitest-docker
+      script:
+        - docker run -v $(pwd):/build epitechcontent/epitest-docker bash -c "cd build && make fclean && make && make fclean"
+
+    - stages: test_unit
+      name: "Run Unit Tests"
+      if: type != cron
+      script:
+        - docker run -v $(pwd):/build epitechcontent/epitest-docker bash -c "cd build && make fclean && make tests_run && make fclean"
